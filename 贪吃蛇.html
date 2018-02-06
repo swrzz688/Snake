@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贪吃蛇</title>
+	<style>
+	#youxi{
+		width: 500px;
+		height: 500px;
+		border:2px solid #666;
+		margin: 50px auto;
+		position: relative;
+		background-color: #000;
+	}
+	.newshe{
+		width: 16px;
+		height: 16px;
+		background-color:#fff;
+		border:1px solid #f00;
+		position: absolute;
+    border-radius: 3px;
+	}
+	#youxi span{
+      width:20px;
+      height:20px;
+      background-color:yellow;
+      position:absolute;
+      border-radius:50%;
+      display:block;
+  }
+  .shezhi{
+    width:200px;
+    height: 470px;
+    position: relative;
+    background-color: #f3f3f3;
+    top: -554px;
+    left: 264px;
+    padding-left: 20px;
+    padding-top: 30px;
+    line-height: 30px;
+  }
+  #over{
+    font-size: 30px;
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    display: none;
+    z-index: 2;
+    position: absolute;
+    left: 395px;
+    top: 192px;
+    width: 200px;
+    height: 50px;
+  }
+  #over.over{
+    display: block;
+    font-size: 30px;
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    position: absolute;
+    left: 395px;
+    top: 192px;
+    width: 200px;
+    height: 50px;
+    z-index: 2;
+  }
+  #fenshu{
+    color:#f00;
+    font-weight:bold;
+    position:relative;
+    display:inline-block;
+    transform:scale(1);
+    opacity: 1;
+    transition:all .3s;
+  }
+  #fenshu.yangshi{
+    opacity: 0;
+    transform:scale(1.2)
+  }
+  #anliu{
+    border-radius: 2px;
+  }
+  #zhanting{
+    border-radius: 2px;
+  }
+  #name{
+    background-color: #f9f9f9;
+  }
+  #nandu{
+    background-color: #f5f5f5;
+    border-radius: 2px;
+    color: red;
+    border-color: #999;
+  }
+	</style>
+</head>
+<body>
+	<div id="youxi">
+  </div>
+  <div class="shezhi">
+		<p id="over">游戏结束</p>
+		<p>now Player:<input type="text" id="name"></p>
+		<span>分数：</span>
+		<span id="fenshu">0</span>
+		<p><button id="anliu">开始游戏</button></p>
+    <p><button id="zhanting">暂停</button></p>
+		<p class="nd">
+			难度：
+			<select id="nandu">
+				<option value="200">普通</option>
+				<option value="100">一般</option>
+				<option value="50">困难</option>
+			</select>
+		</p>
+		<p>时间:<span id="gameTime">0</span>
+			<span>秒</span>
+		</p>
+	</div>
+	<script>
+		var game=document.getElementById("youxi")
+    var sty=document.getElementById("name")
+		var over=document.getElementById("over")
+		var btn=document.getElementById("anliu")
+		var zt=document.getElementById("zhanting")
+    var nandu=document.getElementById("nandu")
+    var gametime=document.getElementById("gameTime")
+    var gamefenshu=document.getElementById("fenshu")
+		var wo=document.getElementById("shangdiwo")
+		var sd="shangdimoshi"
+		var gamexingxi={
+			changdu:3,
+			//蛇身长度
+			fangxiang:"right",
+			// 默认方向向右
+			sude:null,
+			// 速度
+			player:"",
+			// 玩家姓名
+			panduan:false,
+			miao:00,
+      // 游戏时间
+      fenshu:00
+      // 游戏分数
+		}
+
+
+		function xinshe(xy){
+			var newshe=document.createElement("div")
+			// 创建一个新节点
+			newshe.className="newshe"
+			// 将newshe的样式赋予newshe节点
+			game.appendChild(newshe)
+			// 将newshe节点插入到game
+			shuzu.push(newshe)
+			// 将newshe插入的shuzu数组最后
+			newshe.style.left=xy.x + "px"
+			newshe.style.top=xy.y + "px"
+		}
+
+		function xinsnake(){
+			shuzu=[]
+			// 空数组
+			for(var a=0;a<gamexingxi.changdu;a++){
+				xinshe({x:a*20,y:0})
+			}
+		}
+		//  
+		// 初始化蛇身
+
+		// <..................生成蛇身.....................>
+
+
+		function stater(){
+			var left=parseInt(shuzu[shuzu.length-1].style.left)
+			var top=parseInt(shuzu[shuzu.length-1].style.top)
+			if(fangxiang=="right"){
+				shuzu[0].style.left=left+20+"px"
+				shuzu[0].style.top=top+"px"
+			}
+			if(fangxiang=="left"){  
+				shuzu[0].style.left=left-20+"px"
+				shuzu[0].style.top=top+"px"
+			}
+			if(fangxiang=="top"){
+				shuzu[0].style.left=left+"px"
+				shuzu[0].style.top=top-20+"px"
+			}
+			if(fangxiang=="bottom"){
+				shuzu[0].style.left=left+"px"
+				shuzu[0].style.top=top+20+"px"
+			}
+				shuzu.push(shuzu[0])
+				shuzu.shift()
+				// 初始化数组
+
+
+			herd={}
+   			herd.y=parseInt(shuzu[shuzu.length-1].style.top)
+   			herd.x=parseInt(shuzu[shuzu.length-1].style.left)
+   			if(herd.x == xy.x && herd.y == xy.y){
+   				food()
+  				xinshe({x:herd.x,y:herd.y})
+  				// fenshu.innerHTML=parseInt(fenshu.innerHTML)+10  // 游戏分数
+          fenshuyngshi()
+   			}
+   			// 得分碰撞检测
+
+   			if(gamexingxi.player == ""){
+          		shangdi();
+       	}
+       		 // 上帝模式执行
+
+   			if(herd.x > 480 || herd.x < 0 || herd.y > 480 || herd.y < 0){	
+          if(fangxiang=="right"){
+            shuzu[shuzu.length-1].style.left=parseInt(shuzu[0].style.left)-20+"px"
+          }
+          if(fangxiang=="left"){
+            shuzu[shuzu.length-1].style.left=parseInt(shuzu[0].style.left)+20+"px"
+          }
+          if(fangxiang=="top"){
+            shuzu[shuzu.length-1].style.top=parseInt(shuzu[0].style.top)+20+"px"
+          }
+          if(fangxiang=="bottom"){
+            shuzu[shuzu.length-1].style.top=parseInt(shuzu[0].style.top)-20+"px"
+          }
+          		stop();
+          		over.style.display="block"
+        }
+
+        	// 碰撞边缘死亡检测
+
+        	for(var s=0;s<shuzu.length-2;s++){
+        		// 枚举除了
+        		if(parseInt(shuzu[s].style.left)==herd.x && parseInt(shuzu[s].style.top)==herd.y){
+        			stop()
+        			over.style.display="block"	
+        		}
+        	}
+        	// 碰撞自生死亡检测
+
+		}
+		// btn.onclick=function(){
+		// 	zyd=setInterval(function(){
+		// 		stater()
+		// 	},150)
+  //  	}
+   		// 绑定开始游戏点击事件
+
+   		zt.onclick=function(){
+       		 clearInterval(zyd)
+      }
+      	// 绑定暂停游戏点击事件
+
+   		// <.....................蛇的运动.........................>
+
+
+   		function food(){
+   			if(game.getElementsByTagName("span").length){
+          		game.removeChild(game.getElementsByTagName("span")[0])
+          		//清除已经存在的食物
+       		 }
+   			var food=document.createElement("span")
+   			game.appendChild(food)
+   			// 生成并插入食物节点
+   			norept()
+   			food.style.left = xy.x + "px"
+   			food.style.top = xy.y + "px"
+   			//生成食物随机坐标值 
+   		}
+   			// food()
+
+
+   			function stop(){
+       		 clearInterval(zyd)
+           clearInterval(gameTime)
+           // over.className="over" 
+      		}
+      		// 蛇死亡逻辑
+
+
+
+      	function norept(){
+	   			xy=({x:0,y:0})
+	   			xy.x = Math.floor((Math.random()*480)/20) * 20
+	   			xy.y = Math.floor((Math.random()*480)/20) * 20
+	   			for(var m=0;m<shuzu.length;m++){
+	   			 	body = {};
+	          		body.x = parseInt(shuzu[m].style.left);
+	          		body.y = parseInt(shuzu[m].style.top);
+	   				if(body.x == xy.x && body.y == xy.y){
+	            	norept();
+	          }
+	   			}
+	   		} 
+   		// <......................生成随机食物..................>
+
+   		window.onkeydown = function(event){
+   			if(event.keyCode ==38 && fangxiang !=="bottom"){
+   				fangxiang="top"
+   			}
+   			if(event.keyCode ==39 && fangxiang !=="left"){
+   				fangxiang="right"
+   			}
+   			if(event.keyCode ==37 && fangxiang !=="right"){
+   				fangxiang="left"
+   			}
+   			if(event.keyCode ==40 && fangxiang !=="top"){
+   				fangxiang="bottom"
+   			}
+   		} 
+   		// 给蛇绑定键盘事件改变蛇的走向
+
+   		// <.................给蛇绑定键盘事件改变走向.............>
+
+   		function shangdi(){
+   			if(herd.x !== xy.x){
+   			 	if(herd.x>xy.x){
+   			 		if(fangxiang=="right"){
+              for(var i=0;i<shuzu.length;i++){
+                if(parseInt(shuzu[i].style.left)==herd.x+20 && herd.y!=xy.y){
+   			 			    fangxiang="bottom"
+                }
+                if(parseInt(shuzu[i].style.top)==herd.y-20 && herd.y!=xy.y){
+                  fangxiang="top"
+                }
+              }
+   			 		}
+   			 		else{
+   			 			fangxiang="left"
+   			 		}
+   			 	}
+   			 	if(herd.x<xy.x){
+   			 		if(fangxiang=="left"){
+   			 			fangxiang="bottom"
+   			 		}
+   			 		else{
+   			 			fangxiang="right"
+   			 		}
+   			 	}
+   			}
+   			if(herd.x == xy.x && herd.y !== xy.y){
+   			 	if(herd.y < xy.y){
+   			 		if(fangxiang=="top"){
+   			 			fangxiang="left"
+   			 		}
+   			 		else{
+   			 			fangxiang="bottom"
+   			 		}
+   			 	}
+   			 	if(herd.y > xy.y){
+   			 		if(fangxiang=="bottom"){
+   			 			fangxiang="left"
+   			 		}
+   			 		else{
+   			 			fangxiang="top"
+   			 		}
+   			 	}
+   			}
+   		}
+
+      // <.......................上帝模式........................>
+
+      function xinGame(){
+        fangxiang = "right" 
+        // 蛇的移动方向,默认向右移动
+        if(gamexingxi.panduan){
+          clearInterval(zyd)
+          // over.className="over" 
+          gamexingxi.panduan = false;
+        }
+        // 清除已有移动计时器
+        gametime.innerHTML =0;
+        gamexingxi.miao =0;
+        // 重置游戏时间
+        gamexingxi.player=sty.value
+        gamexingxi.sude = nandu.value;
+        //初始化游戏信息
+        game.innerHTML = ""
+        //清空页面中存在的蛇和食物
+        // over.className=""
+        gamexingxi.fenshu =0;
+        gamefenshu.innerHTML =0;
+        //初始化分数
+        xinsnake()
+        //初始化一条蛇
+        food()
+        //初始化食物
+        zyd = setInterval(function(){
+          stater()
+        },gamexingxi.sude)
+        // 蛇自动移动功能
+
+        gamexingxi.panduan = true;
+
+        youxitime();
+        //记录本次游戏时间
+      }
+      btn.onclick = function(){
+        xinGame()
+        over.style.display="none"
+      }
+
+
+       function fenshuyngshi(){
+        gamefenshu.className = "yangshi"
+        //添加class以触发向上渐隐效果
+        setTimeout(function(){
+          gamexingxi.fenshu +=10;
+          //更新对象记录分数
+          gamefenshu.innerHTML = gamexingxi.fenshu;
+          //更新分数
+          gamefenshu.className = ""
+          //移除class以触发向下渐显效果
+        },300)
+        //计时0.3秒
+      }
+
+      function youxitime(){
+        gameTime = setInterval(function(){
+          gamexingxi.miao +=1
+          // 计时器没秒加1
+          gametime.innerHTML = gamexingxi.miao
+          // 将没秒更新数字附加到视图
+        },1000)
+        // 计时1秒
+      }
+	</script>
+</body>
+</html>
